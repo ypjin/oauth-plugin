@@ -111,7 +111,13 @@ module OAuth
       protected
 
         def base_uri
-          URI.parse(params[:redirect_uri] || app.callback_url)
+          redirect_url = app.callback_url
+          passed_in_uri = params[:redirect_uri]
+          if passed_in_uri && !passed_in_uri.empty?
+            redirect_url = passed_in_uri
+          end
+          URI.parse(redirect_url)
+          #URI.parse(params[:redirect_uri] || app.callback_url)
         end
     end
   end
