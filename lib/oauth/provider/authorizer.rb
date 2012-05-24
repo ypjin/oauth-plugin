@@ -30,6 +30,40 @@ module OAuth
                                       :callback_url => @params[:redirect_uri]
       end
 
+      # Is there already an authorized token still valid?
+      def tokenExists?
+        tokens = ::Oauth2Token.where(:client_application_id => app.id,
+                                     :user_id => @user.id,
+                                     :invalidated_at.exists => false,
+                                     :expires_at.gt => Time.now ).desc(:expires_at)
+
+        Rails.logger.debug "Number of valid access tokens found: #{tokens.length}"
+        tokens.each do |token|
+          Rails.logger.debug token.inspect
+        end
+
+        if tokens.length > 0
+          Rails.logger.debug "Use the latest existing valid access token"
+          @token = tokens[0]
+        else
+          return false
+        end
+
+        if tokens.length > 1
+          Rails.logger.debug "Invalidate extra valid access tokens"
+          tokens.each do |token|
+            if token.id != @token.id
+              Rails.logger.debug "Invalidate token: #{token.id}"
+              token.invalidate!
+            end
+          end
+        end
+
+        true
+
+      end
+
+
       def authorized?
         @authorized == true
       end

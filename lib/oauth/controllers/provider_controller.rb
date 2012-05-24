@@ -65,6 +65,15 @@ module OAuth
           else
             #@client_application = ClientApplication.find_by_key! params[:client_id]
             @client_application = ClientApplication.where(:oauth_key => params[:client_id]).first
+
+            #See if there is already an access token issued and it's still valid
+            #If so just respond with the existing token
+            @authorizer = OAuth::Provider::Authorizer.new current_user, true, params
+            if @authorizer.tokenExists?
+              redirect_to @authorizer.redirect_uri
+              return
+            end
+
             render :action => "oauth2_authorize"
           end
         end
