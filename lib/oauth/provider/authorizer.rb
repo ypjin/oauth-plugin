@@ -91,6 +91,8 @@ module OAuth
               r[:code] = code.token
             else
               r[:access_token] = token.token
+              r[:expires_in] = token.expires_in
+              r[:key] = app.apikey
             end
           else
             r[:error] = 'access_denied'
@@ -98,7 +100,7 @@ module OAuth
         else
           r[:error] = 'unsupported_response_type'
         end
-        r[:state] = params[:state] if params[:state]
+        r[:state] = params[:state] if (params[:state] && !params[:state].empty?)
         r
       end
 
