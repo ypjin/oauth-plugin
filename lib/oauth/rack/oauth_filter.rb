@@ -24,7 +24,13 @@ module OAuth
         env["oauth_plugin"] = true
         strategies = []
         if token_string = oauth2_token(request)
-          if token = Oauth2Token.first(:conditions => ['invalidated_at IS NULL AND authorized_at IS NOT NULL and token = ?', token_string])
+          #this is for mysql and doesn't work for mongodb
+          #if token = Oauth2Token.first(:conditions => ['invalidated_at IS NULL AND authorized_at IS NOT NULL and token = ?', token_string])
+          if token = Oauth2Token.where(:token => token_string,
+                                       :invalidated_at => {'$exists' => false},
+                                       :authorized_at => {'$exists' => true},
+                                       :expires_at => {'$gte' => Time.now}).first
+
             env["oauth.token"]   = token
             env["oauth.version"] = 2
             strategies << :oauth20_token
