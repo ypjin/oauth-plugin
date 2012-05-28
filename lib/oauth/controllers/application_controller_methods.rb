@@ -47,11 +47,18 @@ module OAuth
             @controller.send :current_user=, token.user if token
             true
           else
-            if @strategies.include?(:interactive)
-              controller.send :access_denied
-            else
-              controller.send :invalid_oauth_response
-            end
+            # return false directly (no response sent) to allow other filters run.
+            # specifically this is for authenticate_user_or_admin! filter to allow user to login for backward compatibility.
+            # we should encourage new apps to use access token so this may not happen for new apps.
+            # For new apps if failed to authenticate access token a response should be sent out to state that.
+            # In this case we may need to check a flag of apps.
+            false
+            # commented out original logic
+            # if @strategies.include?(:interactive)
+            # controller.send :access_denied
+            # else
+            # controller.send :invalid_oauth_response
+            # end
           end
         end
 
