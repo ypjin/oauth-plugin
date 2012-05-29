@@ -106,6 +106,37 @@ module OAuth
 
       protected
 
+      # copied from Authenticator for easy access in controller - start
+      def oauth20_token
+        request.env["oauth.version"]==2 && request.env["oauth.token"]
+      end
+
+      def oauth10_token
+        request.env["oauth.version"]==1 && request.env["oauth.token"]
+      end
+
+      def oauth10_request_token
+        oauth10_token && oauth10_token.is_a?(::RequestToken) ? oauth10_token : nil
+      end
+
+      def oauth10_access_token
+        oauth10_token && oauth10_token.is_a?(::AccessToken) ? oauth10_token : nil
+      end
+
+      def token
+        oauth20_token || oauth10_access_token || nil
+      end
+
+      def client_application
+        request.env["oauth.version"]==1 && request.env["oauth.client_application"] || oauth20_token.try(:client_application)
+      end
+
+      def two_legged
+        request.env["oauth.version"]==1 && client_application
+      end
+      # copied from Authenticator for easy access in controller - end
+
+
       def current_token
         request.env["oauth.token"]
       end
