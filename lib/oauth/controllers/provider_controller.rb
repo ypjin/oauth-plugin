@@ -92,7 +92,18 @@ module OAuth
       # Invalidate current token
       def invalidate
         current_token.invalidate!
-        head :status=>410
+        #head :status=>410
+
+        redirect_url = current_client_application.callback_url
+        passed_in_uri = params[:redirect_uri]
+        if passed_in_uri && !passed_in_uri.empty?
+          redirect_url = passed_in_uri
+        end
+        if redirect_url && !redirect_url.empty?
+          redirect_to URI.parse(redirect_url).to_s
+        else
+          head :status=>410
+        end
       end
 
       # Capabilities of current_token
