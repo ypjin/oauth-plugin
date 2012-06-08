@@ -91,18 +91,19 @@ module OAuth
 
       # Invalidate current token
       def invalidate
-        current_token.invalidate!
+        if current_token
+          current_token.invalidate!
+        else
+          render :json=>{:success => 'false', :message => 'Invalid Token'}.to_json
+          return
+        end
         #head :status=>410
 
-        redirect_url = current_client_application.callback_url
         passed_in_uri = params[:redirect_uri]
         if passed_in_uri && !passed_in_uri.empty?
-          redirect_url = passed_in_uri
-        end
-        if redirect_url && !redirect_url.empty?
-          redirect_to URI.parse(redirect_url).to_s
+          redirect_to URI.parse(passed_in_uri).to_s
         else
-          head :status=>410
+          render :json=>{:success => 'true'}.to_json
         end
       end
 
