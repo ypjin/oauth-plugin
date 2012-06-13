@@ -61,6 +61,7 @@ module OAuth
         else
           if request.post?
             @authorizer = OAuth::Provider::Authorizer.new current_user, user_authorizes_token?, params
+            reset_session
             redirect_to @authorizer.redirect_uri
           else
             #@client_application = ClientApplication.find_by_key! params[:client_id]
@@ -70,6 +71,7 @@ module OAuth
             #If so just respond with the existing token
             @authorizer = OAuth::Provider::Authorizer.new current_user, true, params
             if @authorizer.tokenExists?
+              reset_session
               redirect_to @authorizer.redirect_uri
               return
             end
