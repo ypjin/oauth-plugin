@@ -62,6 +62,17 @@ module OAuth
           if request.post?
             @authorizer = OAuth::Provider::Authorizer.new current_user, user_authorizes_token?, params
             reset_session
+            #Post message for inter-window communication
+            if params[:cb]
+              if user_authorizes_token?
+                render :template => "oauth/post_message", :locals => {:access_token => @authorizer.token.token,
+                                                                      :expires_in => @authorizer.token.expires_in,
+                                                                      :key => @authorizer.app.apikey}
+              else
+                render :template => "oauth/post_message"
+              end
+              return
+            end
             redirect_to @authorizer.redirect_uri
           else
             #@client_application = ClientApplication.find_by_key! params[:client_id]
@@ -72,6 +83,17 @@ module OAuth
             @authorizer = OAuth::Provider::Authorizer.new current_user, true, params
             if @authorizer.tokenExists?
               reset_session
+              #Post Message for inter-window communication
+              if params[:cb]
+                if user_authorizes_token?
+                  render :template => "oauth/post_message", :locals => {:access_token => @authorizer.token.token,
+                                                                        :expires_in => @authorizer.token.expires_in,
+                                                                        :key => @authorizer.app.apikey}
+                else
+                  render :template => "oauth/post_message"
+                end
+                return
+              end
               redirect_to @authorizer.redirect_uri
               return
             end
@@ -105,7 +127,12 @@ module OAuth
         if passed_in_uri && !passed_in_uri.empty?
           redirect_to URI.parse(passed_in_uri).to_s
         else
-          render :json=>{:success => 'true'}.to_json
+          #Post Message for inter-window communication
+          if params[:cb]
+            render :text=>"<script>parent.postMessage({'success':'true','cb':'" + params[:cb] + "'},'*');</script>"
+          else
+            render :json=>{:success => 'true'}.to_json
+          end
         end
       end
 
