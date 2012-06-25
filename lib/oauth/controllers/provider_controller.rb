@@ -85,13 +85,9 @@ module OAuth
               reset_session
               #Post Message for inter-window communication
               if params[:cb]
-                if user_authorizes_token?
                   render :template => "oauth/post_message", :locals => {:access_token => @authorizer.token.token,
                                                                         :expires_in => @authorizer.token.expires_in,
                                                                         :key => @authorizer.app.apikey}
-                else
-                  render :template => "oauth/post_message"
-                end
                 return
               end
               redirect_to @authorizer.redirect_uri
