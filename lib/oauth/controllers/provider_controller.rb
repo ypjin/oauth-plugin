@@ -62,6 +62,20 @@ module OAuth
           if request.post?
             @authorizer = OAuth::Provider::Authorizer.new current_user, user_authorizes_token?, params
             reset_session
+
+            #Use fragment for inter-window communication
+            if 'fragment' == params[:xd]
+              if user_authorizes_token?
+                render :template => "oauth/fragment", :locals => {:access_token => @authorizer.token.token,
+                                                                  :expires_in => @authorizer.token.expires_in,
+                                                                  :key => @authorizer.app.apikey,
+                                                                  :base_uri => @authorizer.base_uri}
+              else
+                render :template => "oauth/fragment"
+              end
+              return
+            end
+
             #Post message for inter-window communication
             if params[:cb]
               if user_authorizes_token?
@@ -73,6 +87,7 @@ module OAuth
               end
               return
             end
+
             redirect_to @authorizer.redirect_uri
           else
             #@client_application = ClientApplication.find_by_key! params[:client_id]
@@ -83,6 +98,16 @@ module OAuth
             @authorizer = OAuth::Provider::Authorizer.new current_user, true, params
             if @authorizer.tokenExists?
               reset_session
+
+              #Use fragment for inter-window communication
+              if 'fragment' == params[:xd]
+                render :template => "oauth/fragment", :locals => {:access_token => @authorizer.token.token,
+                                                                  :expires_in => @authorizer.token.expires_in,
+                                                                  :key => @authorizer.app.apikey,
+                                                                  :base_uri => @authorizer.base_uri}
+                return
+              end
+
               #Post Message for inter-window communication
               if params[:cb]
                   render :template => "oauth/post_message", :locals => {:access_token => @authorizer.token.token,
@@ -90,6 +115,7 @@ module OAuth
                                                                         :key => @authorizer.app.apikey}
                 return
               end
+
               redirect_to @authorizer.redirect_uri
               return
             end

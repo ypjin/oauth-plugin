@@ -110,7 +110,7 @@ module OAuth
         end * "&"
       end
 
-      protected
+
 
         def base_uri
           redirect_url = app.callback_url
