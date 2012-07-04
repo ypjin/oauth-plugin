@@ -92,7 +92,7 @@ module OAuth
             else
               r[:access_token] = token.token
               r[:expires_in] = token.expires_in
-              r[:key] = app.apikey
+              #r[:key] = app.apikey
             end
           else
             r[:error] = 'access_denied'
