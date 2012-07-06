@@ -59,6 +59,7 @@ module OAuth
           @token = ::RequestToken.where(:token => params[:oauth_token]).first
           oauth1_authorize
         else
+          # Post will not happen now as we are skipping the authorization step (see the else branch)
           if request.post?
             @authorizer = OAuth::Provider::Authorizer.new current_user, user_authorizes_token?, params
             reset_session
@@ -89,6 +90,7 @@ module OAuth
             end
 
             redirect_to @authorizer.redirect_uri
+
           else
             #@client_application = ClientApplication.find_by_key! params[:client_id]
             @client_application = ClientApplication.where(:oauth_key => params[:client_id]).first
@@ -120,7 +122,32 @@ module OAuth
               return
             end
 
-            render :action => "oauth2_authorize"
+            # As we don't have many features to authorize the authorization step is really not necessary.
+            # So we are skipping the authorization step
+            #render :action => "oauth2_authorize"
+
+            @authorizer = OAuth::Provider::Authorizer.new current_user, true, params
+            reset_session
+
+            #Use fragment for inter-window communication
+            if 'fragment' == params[:xd]
+                render :template => "oauth/fragment", :locals => {:access_token => @authorizer.token.token,
+                                                                  :expires_in => @authorizer.token.expires_in,
+                                                                  :key => @authorizer.app.apikey,
+                                                                  :base_uri => @authorizer.base_uri}
+              return
+            end
+
+            #Post message for inter-window communication
+            if params[:cb]
+                render :template => "oauth/post_message", :locals => {:access_token => @authorizer.token.token,
+                                                                      :expires_in => @authorizer.token.expires_in,
+                                                                      :key => @authorizer.app.apikey}
+              return
+            end
+
+            redirect_to @authorizer.redirect_uri
+
           end
         end
       end
