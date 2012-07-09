@@ -89,7 +89,11 @@ module OAuth
               return
             end
 
-            redirect_to @authorizer.redirect_uri
+            begin
+              redirect_to @authorizer.redirect_uri
+            rescue Exception => e
+              render :status => 400, :json => { :meta => { :status => 'fail', :code => 400, :message => 'No redirect_uri provided!'}}
+            end
 
           else
             #@client_application = ClientApplication.find_by_key! params[:client_id]
@@ -118,7 +122,12 @@ module OAuth
                 return
               end
 
-              redirect_to @authorizer.redirect_uri
+              begin
+                redirect_to @authorizer.redirect_uri
+              rescue Exception => e
+                render :status => 400, :json => { :meta => { :status => 'fail', :code => 400, :message => 'No redirect_uri provided!'}}
+              end
+
               return
             end
 
@@ -146,7 +155,11 @@ module OAuth
               return
             end
 
-            redirect_to @authorizer.redirect_uri
+            begin
+              redirect_to @authorizer.redirect_uri
+            rescue Exception => e
+              render :status => 400, :json => { :meta => { :status => 'fail', :code => 400, :message => 'No redirect_uri provided!'}}
+            end
 
           end
         end
