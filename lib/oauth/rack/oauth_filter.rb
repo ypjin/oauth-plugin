@@ -40,6 +40,7 @@ module OAuth
         elsif oauth1_verify(request) do |request_proxy|
             #client_application = ClientApplication.find_by_key(request_proxy.consumer_key)
             client_application = ClientApplication.where(:oauth_key => request_proxy.consumer_key).first
+            if client_application
             env["oauth.client_application_candidate"] = client_application
 
             # Store this temporarily in client_application object for use in request token generation
@@ -56,6 +57,7 @@ module OAuth
             end
             # return the token secret and the consumer secret
             [(oauth_token.nil? ? nil : oauth_token.secret), (client_application.nil? ? nil : client_application.secret)]
+            end
         end
           if env["oauth.token_candidate"]
             env["oauth.token"] = env["oauth.token_candidate"]
